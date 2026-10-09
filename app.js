@@ -197,18 +197,7 @@
 
   async function submit() {
     if (!current || sending) return;
-    const o = readForm();
-    const s = status(o);
-    const missing = Object.keys(s).filter(k => !s[k]);
-    if (missing.length) {
-      const names = { sopa: "Sopita", principio: "Principio", proteina: "Proteína", jugo: "Jugo" };
-      $$(".course[data-group]").forEach(c => c.classList.toggle("is-missing", missing.includes(c.dataset.group)));
-      const err = $("#formError");
-      err.textContent = "Falta elegir: " + missing.map(k => names[k]).join(", ") + ".";
-      err.hidden = false;
-      $(`.course[data-group="${missing[0]}"]`).scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
+    const o = readForm();   // ninguna pregunta es obligatoria
     sending = true;
     const btn = $("#submitBtn"); const label = btn.textContent;
     btn.disabled = true; btn.textContent = "Enviando…";
@@ -228,10 +217,10 @@
   function showDone(o) {
     $("#doneName").textContent = current.nombre;
     const rows = [
-      ["Sopita", LABELS[o.sopa]],
-      ["Principio", principioText(o)],
-      ["Proteína", LABELS[o.proteina]],
-      ["Jugo", LABELS[o.jugo]],
+      ["Sopita", LABELS[o.sopa] || "—"],
+      ["Principio", principioText(o) || "—"],
+      ["Proteína", LABELS[o.proteina] || "—"],
+      ["Jugo", LABELS[o.jugo] || "—"],
     ];
     if (o.obs) rows.push(["Observación", o.obs]);
     $("#doneTicket").innerHTML = rows.map(([k, v]) => `<li><span>${k}</span><span>${esc(v)}</span></li>`).join("");

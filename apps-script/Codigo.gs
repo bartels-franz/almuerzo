@@ -285,13 +285,15 @@ function doPost(e) {
     for (var i = 0; i < GUESTS.length; i++) if (GUESTS[i][0] === id) idx = i;
     if (idx < 0) return json_({ ok: false, error: 'Invitado no válido' });
 
-    var acomp = o.acomp || '';
-    var valid = ['ajiaco_normal', 'ajiaco_pequeno'].indexOf(o.sopa) >= 0 &&
-      (acomp === '' || ['verdura', 'pasta'].indexOf(acomp) >= 0) &&
-      (!!o.frijol || acomp !== '') &&
-      ['lomo', 'bistec', 'pechuga', 'pollo'].indexOf(o.proteina) >= 0 &&
-      ['mora', 'mango'].indexOf(o.jugo) >= 0;
-    if (!valid) return json_({ ok: false, error: 'Pedido incompleto' });
+    // Ninguna pregunta es obligatoria: cada respuesta puede venir vacía, pero si viene debe ser válida
+    var acomp = o.acomp || '', sopa = o.sopa || '', proteina = o.proteina || '', jugo = o.jugo || '';
+    var okOrEmpty = function (v, list) { return v === '' || list.indexOf(v) >= 0; };
+    var valid = okOrEmpty(sopa, ['ajiaco_normal', 'ajiaco_pequeno']) &&
+      okOrEmpty(acomp, ['verdura', 'pasta']) &&
+      okOrEmpty(proteina, ['lomo', 'bistec', 'pechuga', 'pollo']) &&
+      okOrEmpty(jugo, ['mora', 'mango']);
+    if (!valid) return json_({ ok: false, error: 'Opción no válida' });
+    var NADA = '—';   // respuesta sin elegir (distinto de "Pendiente", que es "no ha pedido")
 
     var prin = [];
     if (o.frijol) prin.push(LABELS.frijol);
@@ -307,9 +309,9 @@ function doPost(e) {
     if (String(sh.getRange(row, COL.nombre).getValue()) !== GUESTS[idx][1])
       return json_({ ok: false, error: 'La hoja no está actualizada: ejecuta setup' });
     sh.getRange(row, COL.sopa, 1, 6)
-      .setValues([[LABELS[o.sopa], prin.join(' + '), LABELS[o.proteina], LABELS[o.jugo], obs, now]]);
-    return json_({ ok: true, order: { id: id, nombre: GUESTS[idx][1], sopa: o.sopa, frijol: !!o.frijol, acomp: acomp,
-      proteina: o.proteina, jugo: o.jugo, obs: String(o.obs || '').slice(0, 300), fecha: now.toISOString() } });
+      .setValues([[LABELS[sopa] || NADA, prin.join(' + ') || NADA, LABELS[proteina] || NADA, LABELS[jugo] || NADA, obs, now]]);
+    return json_({ ok: true, order: { id: id, nombre: GUESTS[idx][1], sopa: sopa, frijol: !!o.frijol, acomp: acomp,
+      proteina: proteina, jugo: jugo, obs: String(o.obs || '').slice(0, 300), fecha: now.toISOString() } });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   } finally {
