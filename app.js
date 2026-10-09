@@ -3,12 +3,12 @@
 
   // ---- Datos tomados del Excel "PEDIDO-SÁBADO 10-10-26" ----
   const GUESTS = [
-    [1, "Myriam"], [2, "Sebastían"], [3, "Andrea"], [4, "Sofía"], [5, "Valentina", true],
+    [1, "Myriam"], [2, "Sebastían"], [3, "Andrea"], [4, "Sofía"],
     [6, "Daniel"], [7, "Johana"], [8, "Nicolas"], [9, "Sofía"], [10, "Mariana"],
     [11, "Arturo"], [12, "Nicoll", true], [13, "Paula"], [14, "Richard"], [15, "Martina", true],
     [16, "Pilar"], [17, "Oscar"], [18, "Matías", true], [19, "Ana María"], [20, "Javier"],
     [21, "Cristina"], [22, "Hanna", true], [23, "Alejandra"], [24, "Andrés"], [25, "Thiago", true],
-    [26, "Sofía"], [27, "Franz"], [28, "Juan"], [29, "Camila"], [30, "Julián"], [31, "Juan Pablo"],
+    [27, "Franz"], [28, "Juan"], [29, "Camila"], [30, "Julián"], [31, "Juan Pablo"],
   ].map(([id, nombre, nino]) => ({ id, nombre, nino: !!nino }));
 
   const LABELS = {
@@ -49,12 +49,12 @@
   }
 
   async function fetchOrders() {
-    if (!API) return demoLoad();
+    if (!API) { const all = demoLoad(); Object.keys(all).forEach(k => { if (!GUESTS.some(g => g.id === Number(k))) delete all[k]; }); return all; }
     const res = await fetch(API + (API.includes("?") ? "&" : "?") + "t=" + Date.now(), { method: "GET" });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Error al leer pedidos");
     const map = {};
-    (data.orders || []).forEach(o => { map[o.id] = o; });
+    (data.orders || []).forEach(o => { if (GUESTS.some(g => g.id === Number(o.id))) map[o.id] = o; });
     return map;
   }
 

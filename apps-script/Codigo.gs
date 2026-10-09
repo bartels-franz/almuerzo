@@ -8,16 +8,18 @@
  * 4) Copia la URL que termina en /exec y pégala en config.js de la página.
  *
  * Volver a ejecutar `setup` restaura el formato sin borrar los pedidos.
+ * Los pedidos se guardan buscando el # del invitado (no la posición de la fila),
+ * así que quitar o reordenar invitados no mezcla pedidos.
  */
 
 // ---------- Datos del Excel ----------
 var GUESTS = [
-  [1,'Myriam',0],[2,'Sebastían',0],[3,'Andrea',0],[4,'Sofía',0],[5,'Valentina',1],
+  [1,'Myriam',0],[2,'Sebastían',0],[3,'Andrea',0],[4,'Sofía',0],
   [6,'Daniel',0],[7,'Johana',0],[8,'Nicolas',0],[9,'Sofía',0],[10,'Mariana',0],
   [11,'Arturo',0],[12,'Nicoll',1],[13,'Paula',0],[14,'Richard',0],[15,'Martina',1],
   [16,'Pilar',0],[17,'Oscar',0],[18,'Matías',1],[19,'Ana María',0],[20,'Javier',0],
   [21,'Cristina',0],[22,'Hanna',1],[23,'Alejandra',0],[24,'Andrés',0],[25,'Thiago',1],
-  [26,'Sofía',0],[27,'Franz',0],[28,'Juan',0],[29,'Camila',0],[30,'Julián',0],[31,'Juan Pablo',0]
+  [27,'Franz',0],[28,'Juan',0],[29,'Camila',0],[30,'Julián',0],[31,'Juan Pablo',0]
 ];
 var LABELS = {
   ajiaco_normal: 'Ajiaco plato normal', ajiaco_pequeno: 'Ajiaco plato pequeño',
@@ -48,6 +50,12 @@ function rng_(key) { return "'" + TAB_PEDIDOS + "'!" + colL_(COL[key]) + FIRST +
 
 // =====================================================================
 function setup() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try { setup_(); } finally { lock.releaseLock(); }
+}
+
+function setup_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ped = buildPedidos_(ss);
   var res = buildResumen_(ss);
@@ -89,13 +97,41 @@ function title_(sh, text, subFormula) {
   sh.setRowHeight(4, 26);
 }
 
-var SUB_FORMULA = '=COUNTIF(' + "'" + TAB_PEDIDOS + "'!E6:E36" + ',"<>' + PENDIENTE + '")&" de ' + GUESTS.length +
-  ' invitados han registrado su pedido"&IF(COUNTIFS(' + "'" + TAB_PEDIDOS + "'!D6:D36" + ',"' + KID + '",' + "'" + TAB_PEDIDOS + "'!E6:E36" +
-  ',"<>' + PENDIENTE + '")>0," ("&COUNTIFS(' + "'" + TAB_PEDIDOS + "'!D6:D36" + ',"' + KID + '",' + "'" + TAB_PEDIDOS + "'!E6:E36" +
-  ',"<>' + PENDIENTE + '")&" niños)",".")';
+var SUB_FORMULA = (function () {
+  var E = rng_('sopa'), D = rng_('nino');
+  var kids = 'COUNTIFS(' + D + ',"' + KID + '",' + E + ',"<>' + PENDIENTE + '")';
+  return '=COUNTIF(' + E + ',"<>' + PENDIENTE + '")&" de ' + GUESTS.length + ' invitados han registrado su pedido"&IF(' +
+    kids + '>0," ("&' + kids + '&" niños)",".")';
+})();
+
+// Lee los pedidos actuales indexados por # de invitado (sirve con cualquier orden de filas)
+function existingById_(sh) {
+  var map = {};
+  var last = sh.getLastRow();
+  if (last < FIRST) return map;
+  sh.getRange(FIRST, 2, last - FIRST + 1, COLS.length).getValues().forEach(function (r) {
+    var id = Number(r[0]);
+    if (id && r[3] && r[3] !== PENDIENTE) map[id] = r;
+  });
+  return map;
+}
+
+// Fila de un invitado según su # en la columna B (null si no está)
+function rowOf_(sh, id) {
+  var last = sh.getLastRow();
+  if (last < FIRST) return null;
+  var ids = sh.getRange(FIRST, 2, last - FIRST + 1, 1).getValues();
+  for (var i = 0; i < ids.length; i++) if (Number(ids[i][0]) === id) return FIRST + i;
+  return null;
+}
 
 // ---------- Pestaña: Pedido por invitado ----------
 function buildPedidos_(ss) {
+  var prev = ss.getSheetByName(TAB_PEDIDOS);
+  var saved = prev ? existingById_(prev) : {};   // pedidos guardados, antes de tocar nada
+  if (prev && prev.getMaxRows() >= FIRST) {         // limpiar la tabla vieja (se reescribe abajo)
+    prev.getRange(FIRST, 1, prev.getMaxRows() - FIRST + 1, prev.getMaxColumns()).clear();
+  }
   var sh = baseSheet_(ss, TAB_PEDIDOS, 11, LAST + 2);
   title_(sh, 'Pedido por invitado', SUB_FORMULA);
 
@@ -108,14 +144,12 @@ function buildPedidos_(ss) {
     .setBackground(C.surface2).setFontColor(C.muted).setFontWeight('bold').setFontSize(9);
   sh.setRowHeight(HEAD, 34);
 
-  // Filas de invitados (no borra pedidos existentes)
+  // Filas de invitados: cada pedido vuelve a la fila de su mismo # de invitado
   var body = sh.getRange(FIRST, 2, GUESTS.length, COLS.length);
-  var cur = body.getValues();
-  var vals = GUESTS.map(function (g, i) {
-    var r = cur[i];
-    var hasOrder = r[3] && r[3] !== PENDIENTE;
+  var vals = GUESTS.map(function (g) {
+    var r = saved[g[0]];
     return [g[0], g[1], g[2] ? KID : '',
-      hasOrder ? r[3] : PENDIENTE, hasOrder ? r[4] : '', hasOrder ? r[5] : '', hasOrder ? r[6] : '', hasOrder ? r[7] : '', hasOrder ? r[8] : ''];
+      r ? r[3] : PENDIENTE, r ? r[4] : '', r ? r[5] : '', r ? r[6] : '', r ? r[7] : '', r ? r[8] : ''];
   });
   body.setValues(vals).setBackground(C.surface).setFontColor(C.ink).setFontSize(11).setWrap(true).setVerticalAlignment('top');
   sh.getRange(FIRST, 2, GUESTS.length, 1).setFontColor(C.muted).setHorizontalAlignment('left');
@@ -197,15 +231,20 @@ function keyOf_(label, keys) {
 function pedidos_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(TAB_PEDIDOS);
-  if (!sh) { setup(); sh = ss.getSheetByName(TAB_PEDIDOS); }
+  if (!sh) { setup_(); sh = ss.getSheetByName(TAB_PEDIDOS); }
   return sh;
 }
 
 function readAll_() {
-  var vals = pedidos_().getRange(FIRST, 2, GUESTS.length, COLS.length).getValues();
+  var sh = pedidos_();
+  var last = sh.getLastRow();
+  if (last < FIRST) return [];
+  var valid = {};
+  GUESTS.forEach(function (g) { valid[g[0]] = true; });
+  var vals = sh.getRange(FIRST, 2, last - FIRST + 1, COLS.length).getValues();
   var out = [];
   vals.forEach(function (r) {
-    if (!r[3] || r[3] === PENDIENTE) return;
+    if (!valid[Number(r[0])] || !r[3] || r[3] === PENDIENTE) return;
     var prin = String(r[4] || '');
     out.push({
       id: Number(r[0]), nombre: r[1], nino: r[2] === KID,
@@ -251,7 +290,10 @@ function doPost(e) {
     if (/^[=+\-@]/.test(obs)) obs = "'" + obs; // evita que se interprete como fórmula
     var now = new Date();
 
-    pedidos_().getRange(FIRST + idx, COL.sopa, 1, 6)
+    var sh = pedidos_();
+    var row = rowOf_(sh, id);
+    if (!row) return json_({ ok: false, error: 'Invitado no encontrado en la hoja' });
+    sh.getRange(row, COL.sopa, 1, 6)
       .setValues([[LABELS[o.sopa], prin.join(' + '), LABELS[o.proteina], LABELS[o.jugo], obs, now]]);
     return json_({ ok: true, order: { id: id, nombre: GUESTS[idx][1], sopa: o.sopa, frijol: !!o.frijol, acomp: acomp,
       proteina: o.proteina, jugo: o.jugo, obs: String(o.obs || '').slice(0, 300), fecha: now.toISOString() } });
