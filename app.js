@@ -3,12 +3,12 @@
 
   // ---- Datos tomados del Excel "PEDIDO-SÁBADO 10-10-26" ----
   const GUESTS = [
-    [1, "Myriam"], [2, "Sebastían"], [3, "Andrea"], [4, "Sofía"],
-    [6, "Daniel"], [7, "Johana"], [8, "Nicolas"], [9, "Sofía"], [10, "Mariana"],
-    [11, "Arturo"], [12, "Nicoll", true], [13, "Paula"], [14, "Richard"], [15, "Martina", true],
-    [16, "Pilar"], [17, "Oscar"], [18, "Matías", true], [19, "Ana María"], [20, "Javier"],
-    [21, "Cristina"], [22, "Hanna", true], [23, "Alejandra"], [24, "Andrés"], [25, "Thiago", true],
-    [27, "Franz"], [28, "Juan"], [29, "Camila"], [30, "Julián"], [31, "Juan Pablo"],
+    [1, "Myriam"], [2, "Sebastían"], [3, "Andrea"], [4, "Sofía"], [5, "Daniel"],
+    [6, "Johana"], [7, "Nicolas"], [8, "Sofía"], [9, "Mariana"], [10, "Arturo"],
+    [11, "Nicoll", true], [12, "Paula"], [13, "Richard"], [14, "Martina", true], [15, "Pilar"],
+    [16, "Oscar"], [17, "Matías", true], [18, "Ana María"], [19, "Javier"], [20, "Cristina"],
+    [21, "Hanna", true], [22, "Alejandra"], [23, "Andrés"], [24, "Thiago", true], [25, "Franz"],
+    [26, "Juan"], [27, "Camila"], [28, "Julián"], [29, "Juan Pablo"],
   ].map(([id, nombre, nino]) => ({ id, nombre, nino: !!nino }));
 
   const LABELS = {
