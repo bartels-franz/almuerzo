@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Almuerzo del Sábado</title>
+<meta name="description" content="Registra tu pedido para el almuerzo del sábado 10 de octubre de 2026.">
+<meta name="theme-color" content="#173A2A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23173A2A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23E9B42F' stroke-width='4'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero__media" aria-hidden="true">
+    <img src="https://images.unsplash.com/photo-1676081986290-ac79c2968c3f?auto=format&fit=crop&w=1600&q=70" alt="" onerror="this.remove()">
+  </div>
+  <div class="hero__inner wrap">
+    <p class="eyebrow">Pedido · Sábado 10-10-26</p>
+    <h1>Almuerzo del sábado</h1>
+    <p class="hero__lead">Busca tu nombre, elige tu sopa, principio, proteína y jugo, y envía tu pedido. Puedes cambiarlo cuando quieras volviendo a esta página.</p>
+    <div class="hero__stats">
+      <div><strong id="statDone">0</strong><span>pedidos registrados</span></div>
+      <div><strong id="statTotal">31</strong><span>invitados</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs wrap" aria-label="Secciones">
+  <button class="tab is-active" data-view="pedido" id="tabPedido">Hacer mi pedido</button>
+  <button class="tab" data-view="resumen" id="tabResumen">Ver resumen</button>
+</nav>
+
+<div id="demoBanner" class="notice wrap" hidden>
+  <strong>Modo de prueba.</strong> Los pedidos solo se guardan en este navegador hasta que se conecte la hoja de pedidos.
+</div>
+
+<main class="wrap">
+
+  <!-- ===== PEDIDO ===== -->
+  <section id="viewPedido" class="view">
+
+    <!-- Paso 1: invitado -->
+    <section class="step" id="stepGuest" aria-labelledby="h-guest">
+      <div class="step__head">
+        <span class="step__num">1</span>
+        <div>
+          <h2 id="h-guest">¿Quién eres?</h2>
+          <p class="muted">Toca tu nombre. Si ya pediste, verás tu pedido para modificarlo.</p>
+        </div>
+      </div>
+      <label class="search" for="guestSearch">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="guestSearch" type="search" placeholder="Buscar nombre" autocomplete="off">
+      </label>
+      <div class="guests" id="guestGrid" role="list"></div>
+    </section>
+
+    <!-- Paso 2: menú -->
+    <section class="step" id="stepMenu" aria-labelledby="h-menu" hidden>
+      <div class="step__head">
+        <span class="step__num">2</span>
+        <div>
+          <h2 id="h-menu">Arma tu plato, <span id="menuGuestName"></span></h2>
+          <p class="muted"><button class="linklike" id="changeGuest" type="button">Cambiar de invitado</button></p>
+        </div>
+      </div>
+
+      <form id="orderForm" novalidate>
+        <article class="course" data-group="sopa">
+          <div class="course__img"><img loading="lazy" src="https://images.unsplash.com/photo-1644753787064-9f2846d6c995?auto=format&fit=crop&w=1200&q=70" alt="Plato de ajiaco" onerror="this.remove()"></div>
+          <div class="course__body">
+            <div class="course__title">
+              <h3>Sopita</h3>
+              <span class="rule">Escoja el tamaño del plato</span>
+            </div>
+            <div class="options" role="radiogroup" aria-label="Sopita">
+              <label class="opt"><input type="radio" name="sopa" value="ajiaco_normal" id="o-ajiaco_normal"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Ajiaco <em>plato normal</em></span></span></label>
+              <label class="opt"><input type="radio" name="sopa" value="ajiaco_pequeno" id="o-ajiaco_pequeno"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Ajiaco <em>plato pequeño</em></span></span></label>
+            </div>
+          </div>
+        </article>
+
+        <article class="course" data-group="principio">
+          <div class="course__img"><img loading="lazy" src="https://images.unsplash.com/photo-1723693407562-bb4fcae76797?auto=format&fit=crop&w=1200&q=70" alt="Plato servido sobre mesa de madera" onerror="this.remove()"></div>
+          <div class="course__body">
+            <div class="course__title">
+              <h3>Principio</h3>
+              <span class="rule">Puede marcar frijol y además verdura o pasta</span>
+            </div>
+            <div class="options">
+              <label class="opt opt--check"><input type="checkbox" name="frijol" value="frijol" id="o-frijol"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Frijol</span></span></label>
+              <div class="options__sub" role="radiogroup" aria-label="Verdura o pasta">
+                <label class="opt"><input type="radio" name="acomp" value="verdura" id="o-verdura"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Verdura <em>con carne molida</em></span></span></label>
+                <label class="opt"><input type="radio" name="acomp" value="pasta" id="o-pasta"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Pasta <em>con carne molida</em></span></span></label>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="course" data-group="proteina">
+          <div class="course__img"><img loading="lazy" src="https://images.unsplash.com/photo-1702827496401-216be3f435d0?auto=format&fit=crop&w=1200&q=70" alt="Plato con pollo, papas y verduras" onerror="this.remove()"></div>
+          <div class="course__body">
+            <div class="course__title">
+              <h3>Proteína</h3>
+              <span class="rule">Puede marcar una sola</span>
+            </div>
+            <div class="options options--2" role="radiogroup" aria-label="Proteína">
+              <label class="opt"><input type="radio" name="proteina" value="lomo" id="o-lomo"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Lomo de cerdo <em>a la plancha</em></span></span></label>
+              <label class="opt"><input type="radio" name="proteina" value="bistec" id="o-bistec"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Carne <em>en bisteck</em></span></span></label>
+              <label class="opt"><input type="radio" name="proteina" value="pechuga" id="o-pechuga"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Pechuga <em>a la plancha</em></span></span></label>
+              <label class="opt"><input type="radio" name="proteina" value="pollo" id="o-pollo"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Pollo <em>al horno</em></span></span></label>
+            </div>
+          </div>
+        </article>
+
+        <article class="course" data-group="jugo">
+          <div class="course__img course__img--duo">
+            <img loading="lazy" src="https://images.unsplash.com/photo-1615478503562-ec2d8aa0e24e?auto=format&fit=crop&w=700&q=70" alt="Jugo de mora en frasco de vidrio" onerror="this.remove()">
+            <img loading="lazy" src="https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=700&q=70" alt="Jugo de mango" onerror="this.remove()">
+          </div>
+          <div class="course__body">
+            <div class="course__title">
+              <h3>Jugo</h3>
+              <span class="rule">Uno solo</span>
+            </div>
+            <div class="options" role="radiogroup" aria-label="Jugo">
+              <label class="opt"><input type="radio" name="jugo" value="mora" id="o-mora"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Mora</span><span class="swatch swatch--mora" aria-hidden="true"></span></span></label>
+              <label class="opt"><input type="radio" name="jugo" value="mango" id="o-mango"><span class="opt__box"><span class="opt__mark"></span><span class="opt__text">Mango</span><span class="swatch swatch--mango" aria-hidden="true"></span></span></label>
+            </div>
+          </div>
+        </article>
+
+        <article class="course course--plain">
+          <div class="course__body">
+            <div class="course__title">
+              <h3>Observación a tener en cuenta</h3>
+              <span class="rule">Opcional</span>
+            </div>
+            <textarea id="obs" name="obs" rows="3" maxlength="300" placeholder="Por ejemplo: sin cebolla, poca sal…"></textarea>
+          </div>
+        </article>
+
+        <p class="form-error" id="formError" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <!-- Confirmación -->
+    <section class="step confirm" id="stepDone" hidden aria-live="polite">
+      <div class="confirm__seal" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><path d="M14 25l7 7 14-15"/></svg>
+      </div>
+      <h2>¡Pedido registrado, <span id="doneName"></span>!</h2>
+      <p class="muted">Esto es lo que pediste para el sábado 10 de octubre:</p>
+      <ul class="ticket" id="doneTicket"></ul>
+      <div class="confirm__actions">
+        <button class="btn btn--ghost" id="editAgain" type="button">Modificar mi pedido</button>
+        <button class="btn" id="otherGuest" type="button">Registrar a otra persona</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===== RESUMEN ===== -->
+  <section id="viewResumen" class="view" hidden>
+    <div class="summary-head">
+      <div>
+        <h2>Resumen para la cocina</h2>
+        <p class="muted" id="sumMeta">Cargando…</p>
+      </div>
+      <button class="btn btn--ghost btn--sm" id="refreshBtn" type="button">Actualizar</button>
+    </div>
+
+    <div class="totals" id="totals"></div>
+
+    <h3 class="sub">Pedido por invitado</h3>
+    <div class="table-wrap">
+      <table class="orders" id="ordersTable">
+        <thead>
+          <tr><th>#</th><th>Invitado</th><th>Sopita</th><th>Principio</th><th>Proteína</th><th>Jugo</th><th>Observación</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- Barra inferior del pedido -->
+<div class="dock" id="dock" hidden>
+  <div class="dock__inner wrap">
+    <ol class="progress" id="progress" aria-label="Progreso del pedido">
+      <li data-k="sopa">Sopita</li>
+      <li data-k="principio">Principio</li>
+      <li data-k="proteina">Proteína</li>
+      <li data-k="jugo">Jugo</li>
+    </ol>
+    <button class="btn btn--accent" id="submitBtn" type="button">Enviar pedido</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<footer class="foot wrap">
+  <p>Almuerzo · Sábado 10 de octubre de 2026</p>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
